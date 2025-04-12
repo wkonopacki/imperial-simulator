@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Imperial Match Simulator</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 2rem; text-align: center; }
+    input, button, textarea { margin: 0.5rem; padding: 0.5rem; width: 300px; max-width: 90%; }
+    button { cursor: pointer; background-color: #007BFF; color: white; border: none; border-radius: 4px; }
+    button:hover { background-color: #0056b3; }
+    .result { margin-top: 1rem; font-weight: bold; font-size: 1.2rem; }
+  </style>
+</head>
+<body>
+  <h1>⚔️ Imperial Match Simulator ⚔️</h1>
+  <form id="matchForm">
+    <input type="text" id="team1" placeholder="Drużyna 1 (np. Portugalia)" required /><br />
+    <textarea id="team1players" placeholder="Skład drużyny 1 (po jednym na linijkę, np. Vasco da Gama (85))" rows="5"></textarea><br />
+
+    <input type="text" id="team2" placeholder="Drużyna 2 (np. Hiszpania)" required /><br />
+    <textarea id="team2players" placeholder="Skład drużyny 2 (po jednym na linijkę, np. Kolumb (90))" rows="5"></textarea><br />
+
+    <button type="submit">Symuluj Mecz</button>
+  </form>
+  <div class="result" id="result"></div>
+
+  <script>
+    const form = document.getElementById("matchForm");
+    const resultDiv = document.getElementById("result");
+
+    function calculateTeamStrength(playerList) {
+      const players = playerList.split("\n").map(p => p.trim()).filter(p => p);
+      let strength = 0;
+      for (let player of players) {
+        const match = player.match(/\((\d{1,3})\)/);
+        if (match) {
+          strength += parseInt(match[1], 10);
+        } else {
+          strength += 50; // domyślna wartość jeśli brak liczby
+        }
+      }
+      return strength;
+    }
+
+    function simulateScore(strengthA, strengthB) {
+      const total = strengthA + strengthB;
+      const chanceA = strengthA / total;
+
+      const baseScoreA = Math.floor(Math.random() * 4);
+      const baseScoreB = Math.floor(Math.random() * 4);
+
+      const bonusA = Math.random() < chanceA ? 1 : 0;
+      const bonusB = Math.random() < (1 - chanceA) ? 1 : 0;
+
+      return [baseScoreA + bonusA, baseScoreB + bonusB];
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const team1 = document.getElementById("team1").value;
+      const team2 = document.getElementById("team2").value;
+      const team1players = document.getElementById("team1players").value;
+      const team2players = document.getElementById("team2players").value;
+
+      const strength1 = calculateTeamStrength(team1players);
+      const strength2 = calculateTeamStrength(team2players);
+
+      const [score1, score2] = simulateScore(strength1, strength2);
+
+      let winner = "Remis!";
+      if (score1 > score2) winner = `Zwycięstwo dla ${team1}!`;
+      else if (score2 > score1) winner = `Zwycięstwo dla ${team2}!`;
+
+      resultDiv.innerHTML = `${team1} ${score1} : ${score2} ${team2}<br />${winner}`;
+    });
+  </script>
+</body>
+</html>
